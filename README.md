@@ -56,6 +56,16 @@ colcon build --packages-select cobot_description cobot_bringup
 source install/setup.bash   # fish: source install/setup.fish
 ```
 
+If you're on `fish` and `install/setup.fish` doesn't exist after building,
+RoboStack's `python-colcon-common-extensions` didn't pull in the fish
+overlay generator — install it and rebuild:
+
+```fish
+python3 -m pip install colcon-fish
+colcon build --packages-select cobot_description cobot_bringup
+source install/setup.fish
+```
+
 Install the `cobot_gym` Python package into the same environment:
 
 ```bash
