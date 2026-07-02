@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>cobot_description</name>
+  <version>0.1.0</version>
+  <description>Generic 6-DOF cobot arm URDF/xacro description</description>
+  <maintainer email="jeffrey.goh@sit.singaporetech.edu.sg">jgyy</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>xacro</depend>
+  <depend>gz_ros2_control</depend>
+  <export><build_type>ament_cmake</build_type></export>
+</package>

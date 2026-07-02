@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>cobot_bringup</name>
+  <version>0.1.0</version>
+  <description>Launch files to bring up the cobot arm in Gazebo</description>
+  <maintainer email="jeffrey.goh@sit.singaporetech.edu.sg">jgyy</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <exec_depend>cobot_description</exec_depend>
+  <exec_depend>ros_gz_sim</exec_depend>
+  <exec_depend>ros_gz_bridge</exec_depend>
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>joint_state_broadcaster</exec_depend>
+  <exec_depend>position_controllers</exec_depend>
+  <export><build_type>ament_cmake</build_type></export>
+</package>
