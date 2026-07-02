@@ -8,6 +8,8 @@ Cobot arm simulation + reinforcement learning.
 - **Gazebo Harmonic (gz-harmonic)** — physics simulation
 - **MoveIt 2** — motion planning
 - **Gymnasium** — RL environment API
+- **Universal Robots UR5e** (`ur_description` + `ur_simulation_gz`) — the
+  simulated arm, real meshes/kinematics instead of a placeholder model
 
 ## Setup (CachyOS / Arch, fish shell)
 
@@ -27,9 +29,13 @@ its GitHub releases page and put it on `PATH`.
 ```fish
 micromamba create -n ros2 -c robostack-jazzy -c conda-forge \
   ros-jazzy-desktop ros-jazzy-moveit ros-jazzy-ros-gz \
-  ros-jazzy-ros2-control ros-jazzy-ros2-controllers ros-jazzy-gz-ros2-control \
+  ros-jazzy-ur-simulation-gz \
   python-colcon-common-extensions
 ```
+
+`ros-jazzy-ur-simulation-gz` pulls in `ur_description` (the real UR5e
+meshes/kinematics), `ros2_control`/`ros2_controllers`, and `gz_ros2_control`
+transitively — no need to list them separately.
 
 RoboStack's ROS activation hook (`ros-jazzy-ros-workspace_activate.sh`) is a
 bash-only script, so plain `micromamba activate ros2` does **not** set
@@ -81,7 +87,7 @@ per the two-step activation above):
 ```fish
 micromamba activate ros2
 bass source $CONDA_PREFIX/setup.bash
-colcon build --packages-select cobot_description cobot_bringup
+colcon build --packages-select cobot_bringup
 source install/setup.fish
 ```
 
@@ -104,10 +110,12 @@ ros2 launch cobot_bringup sim.launch.py
 `gz_ros2_control`, which RoboStack installs to `$CONDA_PREFIX/lib` but
 doesn't add to gz's plugin search path) and `GZ_IP=127.0.0.1` (so gz-transport
 discovery doesn't get confused by other network interfaces — VPNs, Docker
-bridges, etc.) — no extra env vars needed. Wait for both
+bridges, etc.) before including `ur_simulation_gz`'s own launch file
+(`ur_type:=ur5e`) — no extra env vars needed. Wait for both
 `Configured and activated joint_state_broadcaster` and
-`Configured and activated joint_group_position_controller` in the log before
-moving on to training/evaluation.
+`Configured and activated forward_position_controller` in the log before
+moving on to training/evaluation. You should see a real UR5e model in the
+Gazebo window, not a placeholder shape.
 
 **2. (Optional) Sanity-check joint control** — in a second terminal, send a
 one-shot position command to all 6 joints and confirm the arm moves in the
@@ -117,14 +125,15 @@ Gazebo window:
 micromamba activate ros2
 bass source $CONDA_PREFIX/setup.bash
 source install/setup.fish
-ros2 topic pub --once /joint_group_position_controller/commands std_msgs/msg/Float64MultiArray "{data: [0.8, 0.5, -0.5, 0.3, 0.4, 0.2]}"
+ros2 topic pub --once /forward_position_controller/commands std_msgs/msg/Float64MultiArray "{data: [0.8, -1.2, 1.0, -1.4, -1.57, 0.0]}"
 ```
 
-The arm's rest pose (all joints at 0) is a straight vertical pole — that's
-expected, not a bug, since nothing is publishing commands yet. The command
-above bends it into a zig-zag; each of the 6 numbers is a joint angle in
-radians (roughly `-3.14` to `3.14`). Send `{data: [0, 0, 0, 0, 0, 0]}` to
-reset it straight. Confirm the joints actually reached those positions with:
+The joint order is `shoulder_pan_joint, shoulder_lift_joint, elbow_joint,
+wrist_1_joint, wrist_2_joint, wrist_3_joint`, each an angle in radians
+(roughly `-3.14` to `3.14`). The arm's rest pose (all joints at 0) already
+looks like a folded UR5e, not a straight pole, since this is a real robot
+model. Send `{data: [0, 0, 0, 0, 0, 0]}` to return to rest. Confirm the
+joints actually reached those positions with:
 
 ```fish
 ros2 topic echo /joint_states --once

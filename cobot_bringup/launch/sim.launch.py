@@ -2,16 +2,10 @@ import os
 from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription, SetEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch_ros.actions import Node
-from ament_index_python.packages import get_package_share_directory
-import xacro
+from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
-    description_share = get_package_share_directory('cobot_description')
-    urdf_xacro = os.path.join(description_share, 'urdf', 'cobot.urdf.xacro')
-    robot_description_content = xacro.process_file(urdf_xacro).toxml()
-
     conda_prefix = os.environ.get('CONDA_PREFIX', '')
 
     # gz sim looks for system plugins (e.g. gz_ros2_control) only on
@@ -29,47 +23,24 @@ def generate_launch_description():
     # names."
     gz_ip = SetEnvironmentVariable('GZ_IP', '127.0.0.1')
 
-    robot_state_publisher = Node(
-        package='robot_state_publisher',
-        executable='robot_state_publisher',
-        output='screen',
-        parameters=[{'robot_description': robot_description_content}],
-    )
-
-    gz_sim = IncludeLaunchDescription(
+    # Real UR5e description + Gazebo/ros2_control integration from upstream
+    # (ur_description, ur_simulation_gz), instead of a hand-rolled arm.
+    # forward_position_controller matches our existing direct-topic control
+    # design (CobotTrackingEnv publishes Float64MultiArray position commands
+    # directly, no MoveIt/trajectory planning in the per-step control loop).
+    ur_sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(
-                get_package_share_directory('ros_gz_sim'),
-                'launch', 'gz_sim.launch.py')
+            [FindPackageShare('ur_simulation_gz'), '/launch/ur_sim_control.launch.py']
         ),
-        launch_arguments={'gz_args': '-r empty.sdf'}.items(),
-    )
-
-    spawn = Node(
-        package='ros_gz_sim',
-        executable='create',
-        arguments=['-topic', 'robot_description', '-name', 'cobot'],
-        output='screen',
-    )
-
-    joint_state_broadcaster_spawner = Node(
-        package='controller_manager',
-        executable='spawner',
-        arguments=['joint_state_broadcaster'],
-    )
-
-    position_controller_spawner = Node(
-        package='controller_manager',
-        executable='spawner',
-        arguments=['joint_group_position_controller'],
+        launch_arguments={
+            'ur_type': 'ur5e',
+            'initial_joint_controller': 'forward_position_controller',
+            'launch_rviz': 'false',
+        }.items(),
     )
 
     return LaunchDescription([
         gz_plugin_path,
         gz_ip,
-        gz_sim,
-        robot_state_publisher,
-        spawn,
-        joint_state_broadcaster_spawner,
-        position_controller_spawner,
+        ur_sim,
     ])
