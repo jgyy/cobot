@@ -53,7 +53,7 @@ Build the ROS 2 packages once (from the repo root, with the `ros2` env active):
 ```bash
 micromamba activate ros2
 colcon build --packages-select cobot_description cobot_bringup
-source install/setup.bash
+source install/setup.bash   # fish: source install/setup.fish
 ```
 
 Install the `cobot_gym` Python package into the same environment:
@@ -66,7 +66,7 @@ python3 -m pip install -e cobot_gym/
 
 ```bash
 micromamba activate ros2
-source install/setup.bash
+source install/setup.bash   # fish: source install/setup.fish
 ros2 launch cobot_bringup sim.launch.py
 ```
 
