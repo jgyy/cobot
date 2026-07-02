@@ -11,68 +11,36 @@ Cobot arm simulation + reinforcement learning.
 
 ## Setup (CachyOS / Arch)
 
-ROS 2 has no official Arch packages, so this project uses the AUR route via `paru`.
-
-### 1. Base ROS 2 Jazzy
-
-```bash
-paru -S ros2-jazzy
-```
-
-Pulls the full desktop meta-package. This compiles ~300 packages from source —
-expect 1-3 hours and 15-20GB disk on first install.
-
-### 2. Environment setup
-
-Add to `~/.bashrc`:
+ROS 2 has no official Arch packages, and the AUR route (compiling `ros2-jazzy` via
+`paru`) depends on `aur.archlinux.org` being reachable — it isn't always. This
+project instead uses **RoboStack (conda/mamba)**: prebuilt ROS 2 binaries from
+conda-forge, installed natively into a conda environment (no container, no
+AUR compile). Requires `micromamba` (or `mamba`/`conda`):
 
 ```bash
-source /opt/ros/jazzy/setup.bash
+curl -Ls https://micro.mamba.pm/install.sh | bash
 ```
 
-or `~/.config/fish/config.fish`:
-
-```fish
-source /opt/ros/jazzy/setup.fish
-```
-
-### 3. Gazebo (Harmonic, not Classic — Classic is EOL)
+If that install script itself is unreachable, download `micromamba` manually from
+its GitHub releases page and put it on `PATH`.
 
 ```bash
-paru -S gz-harmonic
-paru -S ros-jazzy-ros-gz
+micromamba create -n ros2 -c robostack-jazzy -c conda-forge \
+  ros-jazzy-desktop ros-jazzy-moveit ros-jazzy-ros-gz \
+  python-colcon-common-extensions
+micromamba activate ros2
 ```
 
-`ros-jazzy-ros-gz` is the ROS 2 <-> Gazebo bridge, required to connect topics/services
-between the two.
-
-### 4. MoveIt 2
+Gymnasium into the same environment:
 
 ```bash
-paru -S ros-jazzy-moveit
+python3 -m pip install gymnasium
 ```
 
-### 5. Build tooling
+Sanity check:
 
 ```bash
-paru -S python-colcon-common-extensions ros-jazzy-ros2-controllers ros-jazzy-ros2-control
-sudo rosdep init
-rosdep update
-```
-
-### 6. Gymnasium (Python, pip not AUR)
-
-```bash
-python3 -m pip install --user gymnasium
-```
-
-Note: if `gymnasium` or its deps lack wheels for your Python version, fall back to a
-`venv`/`pyenv` with Python 3.11 or 3.12.
-
-### Sanity check
-
-```bash
-source /opt/ros/jazzy/setup.bash
+micromamba activate ros2
 ros2 doctor
 gz sim --version
 ros2 launch moveit_setup_assistant setup_assistant.launch.py
