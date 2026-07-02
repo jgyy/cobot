@@ -45,3 +45,48 @@ ros2 doctor
 gz sim --version
 ros2 launch moveit_setup_assistant setup_assistant.launch.py
 ```
+
+## Running RL Training
+
+Build the ROS 2 packages once (from the repo root, with the `ros2` env active):
+
+```bash
+micromamba activate ros2
+colcon build --packages-select cobot_description cobot_bringup
+source install/setup.bash
+```
+
+Install the `cobot_gym` Python package into the same environment:
+
+```bash
+python3 -m pip install -e cobot_gym/
+```
+
+**1. Launch the simulation** (keep this running in its own terminal):
+
+```bash
+micromamba activate ros2
+source install/setup.bash
+ros2 launch cobot_bringup sim.launch.py
+```
+
+**2. Train a policy** (in a second terminal, same `ros2` env active):
+
+```bash
+python3 -m cobot_gym.train --timesteps 200000
+```
+
+Checkpoints are written to `checkpoints/` every `--save-freq` steps (default
+10k), with the final model at `checkpoints/cobot_ppo_final.zip`. TensorBoard
+logs go to `logs/`; view them with:
+
+```bash
+tensorboard --logdir logs/
+```
+
+**3. Evaluate a trained policy** — runs deterministic rollouts against the
+live sim and reports mean end-effector tracking error per episode:
+
+```bash
+python3 cobot_gym/scripts/evaluate.py --checkpoint checkpoints/cobot_ppo_final.zip --episodes 5
+```
