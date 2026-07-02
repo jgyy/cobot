@@ -27,6 +27,7 @@ its GitHub releases page and put it on `PATH`.
 ```fish
 micromamba create -n ros2 -c robostack-jazzy -c conda-forge \
   ros-jazzy-desktop ros-jazzy-moveit ros-jazzy-ros-gz \
+  ros-jazzy-ros2-control ros-jazzy-ros2-controllers ros-jazzy-gz-ros2-control \
   python-colcon-common-extensions
 ```
 
@@ -98,6 +99,15 @@ bass source $CONDA_PREFIX/setup.bash
 source install/setup.fish
 ros2 launch cobot_bringup sim.launch.py
 ```
+
+`sim.launch.py` sets `GZ_SIM_SYSTEM_PLUGIN_PATH` (so gz sim finds
+`gz_ros2_control`, which RoboStack installs to `$CONDA_PREFIX/lib` but
+doesn't add to gz's plugin search path) and `GZ_IP=127.0.0.1` (so gz-transport
+discovery doesn't get confused by other network interfaces — VPNs, Docker
+bridges, etc.) — no extra env vars needed. Wait for both
+`Configured and activated joint_state_broadcaster` and
+`Configured and activated joint_group_position_controller` in the log before
+moving on to training/evaluation.
 
 **2. Train a policy** (in a second terminal, same `ros2` env active):
 
