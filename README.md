@@ -140,11 +140,27 @@ ros2 topic echo /joint_states --once
 ```
 
 This only holds a single pose — it doesn't move continuously, since nothing
-is publishing repeatedly on that topic. Continuous motion is what training
-(next step) and the trained policy actually drive.
+is publishing repeatedly on that topic.
 
-**3. Train a policy** (same terminal used for the sanity check above, or a
-fresh one with the ROS env active):
+**3. (Optional) Continuous motion demo** — repeatedly publishes a sine-wave
+joint motion so you can see the arm actually moving, rather than holding one
+pose:
+
+```fish
+micromamba activate ros2
+bass source $CONDA_PREFIX/setup.bash
+source install/setup.fish
+python3 cobot_gym/scripts/demo_move.py
+```
+
+Ctrl-C to stop. `--amplitude` (radians, default `0.5`) and `--period`
+(seconds per oscillation, default `6`) control how it moves; `--hz`
+(default `20`) controls the publish rate. This is just a fixed-motion demo —
+training (next step) and the trained policy are what actually drive the arm
+purposefully.
+
+**4. Train a policy** (same terminal used for the checks above, or a fresh
+one with the ROS env active):
 
 ```fish
 python3 -m cobot_gym.train --timesteps 200000
@@ -158,7 +174,7 @@ logs go to `logs/`; view them with:
 tensorboard --logdir logs/
 ```
 
-**4. Evaluate a trained policy** — runs deterministic rollouts against the
+**5. Evaluate a trained policy** — runs deterministic rollouts against the
 live sim and reports mean end-effector tracking error per episode:
 
 ```fish
