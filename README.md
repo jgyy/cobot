@@ -117,9 +117,10 @@ bridges, etc.) before including `ur_simulation_gz`'s own launch file
 moving on to training/evaluation. You should see a real UR5e model in the
 Gazebo window, not a placeholder shape.
 
-**2. (Optional) Continuous motion demo** — repeatedly publishes a sine-wave
-joint motion so you can see the arm actually moving, rather than holding one
-pose:
+**2. (Optional) Continuous motion demo** — cycles the arm through a smooth,
+eased pick-and-place motion (rest → approach → pick → retreat → rest →
+approach → place → retreat → repeat), the way an industrial arm actually
+moves between poses, instead of jittering in place:
 
 ```fish
 micromamba activate ros2
@@ -128,11 +129,10 @@ source install/setup.fish
 python3 cobot_gym/scripts/demo_move.py
 ```
 
-Ctrl-C to stop. `--amplitude` (radians, default `0.5`) and `--period`
-(seconds per oscillation, default `6`) control how it moves; `--hz`
-(default `20`) controls the publish rate. This is just a fixed-motion demo —
-training (next step) and the trained policy are what actually drive the arm
-purposefully.
+Ctrl-C to stop. `--speed` (default `1.0`) scales all move/dwell durations —
+`--speed 2` runs at half speed; `--hz` (default `50`) controls the publish
+rate. This is just a fixed-motion demo — training (next step) and the
+trained policy are what actually drive the arm purposefully.
 
 **3. Train a policy** (same terminal used for the checks above, or a fresh
 one with the ROS env active):
