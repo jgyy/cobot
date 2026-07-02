@@ -28,14 +28,32 @@ its GitHub releases page and put it on `PATH`.
 micromamba create -n ros2 -c robostack-jazzy -c conda-forge \
   ros-jazzy-desktop ros-jazzy-moveit ros-jazzy-ros-gz \
   python-colcon-common-extensions
-micromamba activate ros2
 ```
 
-RoboStack's `python-colcon-common-extensions` doesn't reliably pull in the
-`fish` overlay generator, so install it explicitly:
+RoboStack's ROS activation hook (`ros-jazzy-ros-workspace_activate.sh`) is a
+bash-only script, so plain `micromamba activate ros2` does **not** set
+`AMENT_PREFIX_PATH` and friends under fish — `ros2`/`gz` commands will fail
+with "package not found" errors. Fix this with
+[`bass`](https://github.com/edc/bass), which lets fish source bash scripts:
+
+```fish
+fisher install edc/bass
+```
+
+RoboStack's `python-colcon-common-extensions` also doesn't reliably pull in
+the fish overlay generator for your own workspace builds, so install that
+too:
 
 ```fish
 python3 -m pip install colcon-fish
+```
+
+From here on, activate the ROS env with this two-step sequence (not just
+`micromamba activate ros2`):
+
+```fish
+micromamba activate ros2
+bass source $CONDA_PREFIX/setup.bash
 ```
 
 Gymnasium into the same environment:
@@ -48,6 +66,7 @@ Sanity check:
 
 ```fish
 micromamba activate ros2
+bass source $CONDA_PREFIX/setup.bash
 ros2 doctor
 gz sim --version
 ros2 launch moveit_setup_assistant setup_assistant.launch.py
@@ -55,10 +74,12 @@ ros2 launch moveit_setup_assistant setup_assistant.launch.py
 
 ## Running RL Training
 
-Build the ROS 2 packages once (from the repo root, with the `ros2` env active):
+Build the ROS 2 packages once (from the repo root, with the ROS env active
+per the two-step activation above):
 
 ```fish
 micromamba activate ros2
+bass source $CONDA_PREFIX/setup.bash
 colcon build --packages-select cobot_description cobot_bringup
 source install/setup.fish
 ```
@@ -73,6 +94,7 @@ python3 -m pip install -e cobot_gym/
 
 ```fish
 micromamba activate ros2
+bass source $CONDA_PREFIX/setup.bash
 source install/setup.fish
 ros2 launch cobot_bringup sim.launch.py
 ```
