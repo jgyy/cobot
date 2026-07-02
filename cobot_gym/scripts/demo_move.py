@@ -15,7 +15,7 @@ COMMAND_TOPIC = "/forward_position_controller/commands"
 # -> retreat -> rest. All poses verified to keep the end effector well clear
 # of the ground plane on the UR5e. Joint order:
 # shoulder_pan, shoulder_lift, elbow, wrist_1, wrist_2, wrist_3.
-HOME = [0.0, -1.57, 0.0, -1.57, 0.0, 0.0]
+HOME = [0.0, -1.57, 1.2, -1.2, -1.57, 0.0]
 APPROACH_LEFT = [0.9, -1.2, 1.4, -1.9, -1.57, 0.0]
 PICK_LEFT = [0.9, -1.0, 1.7, -2.3, -1.57, 0.0]
 APPROACH_RIGHT = [-0.9, -1.2, 1.4, -1.9, -1.57, 0.0]
