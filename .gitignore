@@ -53,3 +53,17 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+
+# ROS 2 / colcon build output
+build/
+install/
+log/
+
+# RL training artifacts
+checkpoints/
+logs/
