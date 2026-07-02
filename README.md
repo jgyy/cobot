@@ -109,7 +109,33 @@ bridges, etc.) — no extra env vars needed. Wait for both
 `Configured and activated joint_group_position_controller` in the log before
 moving on to training/evaluation.
 
-**2. Train a policy** (in a second terminal, same `ros2` env active):
+**2. (Optional) Sanity-check joint control** — in a second terminal, send a
+one-shot position command to all 6 joints and confirm the arm moves in the
+Gazebo window:
+
+```fish
+micromamba activate ros2
+bass source $CONDA_PREFIX/setup.bash
+source install/setup.fish
+ros2 topic pub --once /joint_group_position_controller/commands std_msgs/msg/Float64MultiArray "{data: [0.8, 0.5, -0.5, 0.3, 0.4, 0.2]}"
+```
+
+The arm's rest pose (all joints at 0) is a straight vertical pole — that's
+expected, not a bug, since nothing is publishing commands yet. The command
+above bends it into a zig-zag; each of the 6 numbers is a joint angle in
+radians (roughly `-3.14` to `3.14`). Send `{data: [0, 0, 0, 0, 0, 0]}` to
+reset it straight. Confirm the joints actually reached those positions with:
+
+```fish
+ros2 topic echo /joint_states --once
+```
+
+This only holds a single pose — it doesn't move continuously, since nothing
+is publishing repeatedly on that topic. Continuous motion is what training
+(next step) and the trained policy actually drive.
+
+**3. Train a policy** (same terminal used for the sanity check above, or a
+fresh one with the ROS env active):
 
 ```fish
 python3 -m cobot_gym.train --timesteps 200000
@@ -123,7 +149,7 @@ logs go to `logs/`; view them with:
 tensorboard --logdir logs/
 ```
 
-**3. Evaluate a trained policy** — runs deterministic rollouts against the
+**4. Evaluate a trained policy** — runs deterministic rollouts against the
 live sim and reports mean end-effector tracking error per episode:
 
 ```fish
