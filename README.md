@@ -117,32 +117,7 @@ bridges, etc.) before including `ur_simulation_gz`'s own launch file
 moving on to training/evaluation. You should see a real UR5e model in the
 Gazebo window, not a placeholder shape.
 
-**2. (Optional) Sanity-check joint control** — in a second terminal, send a
-one-shot position command to all 6 joints and confirm the arm moves in the
-Gazebo window:
-
-```fish
-micromamba activate ros2
-bass source $CONDA_PREFIX/setup.bash
-source install/setup.fish
-ros2 topic pub --once /forward_position_controller/commands std_msgs/msg/Float64MultiArray "{data: [0.8, -1.2, 1.0, -1.4, -1.57, 0.0]}"
-```
-
-The joint order is `shoulder_pan_joint, shoulder_lift_joint, elbow_joint,
-wrist_1_joint, wrist_2_joint, wrist_3_joint`, each an angle in radians
-(roughly `-3.14` to `3.14`). The arm's rest pose (all joints at 0) already
-looks like a folded UR5e, not a straight pole, since this is a real robot
-model. Send `{data: [0, 0, 0, 0, 0, 0]}` to return to rest. Confirm the
-joints actually reached those positions with:
-
-```fish
-ros2 topic echo /joint_states --once
-```
-
-This only holds a single pose — it doesn't move continuously, since nothing
-is publishing repeatedly on that topic.
-
-**3. (Optional) Continuous motion demo** — repeatedly publishes a sine-wave
+**2. (Optional) Continuous motion demo** — repeatedly publishes a sine-wave
 joint motion so you can see the arm actually moving, rather than holding one
 pose:
 
@@ -159,7 +134,7 @@ Ctrl-C to stop. `--amplitude` (radians, default `0.5`) and `--period`
 training (next step) and the trained policy are what actually drive the arm
 purposefully.
 
-**4. Train a policy** (same terminal used for the checks above, or a fresh
+**3. Train a policy** (same terminal used for the checks above, or a fresh
 one with the ROS env active):
 
 ```fish
@@ -174,7 +149,7 @@ logs go to `logs/`; view them with:
 tensorboard --logdir logs/
 ```
 
-**5. Evaluate a trained policy** — runs deterministic rollouts against the
+**4. Evaluate a trained policy** — runs deterministic rollouts against the
 live sim and reports mean end-effector tracking error per episode:
 
 ```fish
